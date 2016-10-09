@@ -11,6 +11,7 @@ Created on Sun Oct 09 09:51:28 2016
 import os
 import zipfile 
 import shutil 
+import re
 import pdb
 import copy
 from collections import OrderedDict
@@ -35,18 +36,15 @@ class Homework:
             if d.endswith('zip'):
                 self.zipFiles.append(os.path.abspath(d))
     def nums(self,fstr):
-        for index ,e in enumerate(fstr):
-            if '1'==e and fstr[index+1]!=' ':
-                tmps=fstr[index:index+9]
-                #pdb.set_trace()
-                break
-            else:
-                tmps=fstr
-        return tmps
+        num=re.findall(r'[0-9]+',fstr)
+        if num==[]:
+            return fstr
+        else:
+            lenN=map(len,num)
+            return num[lenN.index(max(lenN))]
     def extractNum(self,fname):
         flist=list(os.path.split(fname))
         #print flist
-        
         tmps=self.nums(flist[-1])
       #  pdb.set_trace()
         print tmps
@@ -57,30 +55,19 @@ class Homework:
         self.__zipfiles()
         print self.zipFiles
         for zipF in self.zipFiles:
-           # pdb.set_trace()
-            #print (zipF[:-4])
-            #pdb.set_trace()
             numpath=self.extractNum(zipF[:-4])
-            
-           # pdb.set_trace()
             self.zipDirs.append(numpath)
             if not os.path.exists(numpath):
                 os.mkdir(numpath)
                 
             srcZip=zipfile.ZipFile(zipF,'r')
             for eachFile in srcZip.namelist():
-                #print 'eachfile:',eachFile
                 if type(eachFile) is unicode:
                     eachFileCopy=eachFile.encode('utf8')
                 else:
                     eachFileCopy=eachFile
-                   # print eachFile
-                
-                #pdb.set_trace()
                 eachFileName=os.path.normpath(os.path.join(numpath,eachFileCopy))
-                #print 'eachFileName: ',eachFileName
                 eachDirName=os.path.dirname(eachFileName)
-              #  print 'eachDirName:',eachDirName
                 if not os.path.exists(eachDirName):
                     try:
                         os.mkdir(eachDirName)
@@ -104,34 +91,45 @@ class Homework:
         return False
     def checkStdafx(self,f):
         tmp=list()
+        io=0
         with open(f,'r') as cpp:
             for line  in cpp:
                 if "stdafx.h" in line or 'targetver.h' in line or 'pragma' in line:
                     continue
                 elif 'main' in line:
                     tmp.append('int main(int argc,char ** argv)\n')
+                elif 'iostream' in line:
+                    io+=1
+                    tmp.append(line)
                 else:
                     tmp.append(line)
         with open(f,'w') as ncpp:
+            if io==1:
+                pass
+            else:
+                ncpp.write('#include<iostream>\n')
             for nline in tmp:
                 ncpp.write(nline)
                 
     def compileCpp(self):
         for path in self.zipDirs:
-            #pdb.set_trace()
-            #print path
-            for f in os.listdir(path):
-                if f.endswith('.cpp') and not self.checkMain(os.path.normpath(os.path.join(path,f))):
-                    self.checkStdafx(os.path.normpath(os.path.join(path,f)))
-                    shutil.copy(self.testFile,path)
-                elif f.endswith('.h') or f.endswith('.cpp'):
-                    self.checkStdafx(os.path.normpath(os.path.join(path,f)))
            # pdb.set_trace()
-            os.system('g++ -std=c++11 -o {0}/test {0}/*.h {0}/*.cpp'.format(path))
-            os.system('g++ -o {0}/test {0}/*.h {0}/*.cpp'.format(path))
+            #print path
+            if 'stdafx.h' in os.listdir(path):
+                shutil.copy(self.testFile,path)
+            else:
+                for f in os.listdir(path):
+                    if f.endswith('.cpp') and not self.checkMain(os.path.normpath(os.path.join(path,f))):
+                        self.checkStdafx(os.path.normpath(os.path.join(path,f)))
+                        shutil.copy(self.testFile,path)
+                    elif f.endswith('.h') or f.endswith('.cpp'):
+                        self.checkStdafx(os.path.normpath(os.path.join(path,f)))
+           # pdb.set_trace()
+            os.system('g++ -std=c++11 -o {0}/test1 {0}/*.h {0}/*.cpp'.format(path))
+            os.system('g++ -o {0}/test1 {0}/*.h {0}/*.cpp'.format(path))
             key=list(os.path.split(path))[-1]
-            if os.path.exists('{0}/test'.format(path)):
-                os.system('{0}/test > {0}/test.result'.format(path))
+            if os.path.exists('{0}/test1'.format(path)):
+                os.system('{0}/test1 > {0}/test.result'.format(path))
                 self.result[key]=self.computeResult('{0}/test.result'.format(path))
             else:
                 self.result[key]=60
@@ -158,17 +156,69 @@ class Homework:
                 r.write(',')
                 r.write(str(value))
                 r.write('\n')
+class RarHomework(Homework):
+    def __init__(self,path,testFile,result,zipFiles=None,zipDirs=None):
+        Homework.__init__(self,path,testFile,result)
+    def __rarfiles(self):
+        dirs=os.listdir(self.path)
+        for d in dirs:
+            if d.endswith('.rar'):
+                self.zipFiles.append(os.path.abspath(d))   
+    def filesOrDir(self,l):
+        for f in l:
+            if '.h' in f or '.cpp' in f:
+                return True
+        return False
+    def hcppFile(self,p):
+        if os.path.isfile(p) and (p.endswith('.h') or p.endswith('.cpp')):
+            self.hcpp.append(os.path.abspath(p))
+            return 0
+        else:
+            
+            for i in os.listdir(p):
+                self.hcppFile(os.path.abspath(i))
+        return 0
+    def unrar(self):
+        self.__rarfiles()
+        print self.zipFiles
+        for rar in self.zipFiles:
+            self.hcpp=list()
+            s1=os.system('rar x {}'.format(rar))
+            if s1>0:
+                continue
+            numpath=self.extractNum(rar[:-4])
+            self.zipDirs.append(numpath)
+            if not os.path.exists(numpath):
+                os.mkdir(numpath)
+            
+            if self.filesOrDir(os.listdir(self.path)):
+                os.system('mv *.h *.cpp {}'.format(numpath))
+            else:
+                continue
+                
+           
+            
+           # shutil.copy(self.testFile,numpath)
+            
+            
+            
+        
+        
             
         
 if __name__=='__main__':
     path=r'.'    
-    testFile=r'/home/lipei/cpp/hwpy/hmpy/LibArray.cpp'
+    testFile=r'/home/lipei/cpp/hwpy/LibArray.cpp'
     import numpy as np
     students='students.txt'
     s=np.loadtxt(students,'int')
-    h=Homework(path,testFile,s)
-    h.unzip_dir()
-    h.compileCpp()
-    h.save()
+    r=RarHomework(path,testFile,s)
+    r.unzip_dir()
+    r.unrar()
+    r.compileCpp()
+    r.save()
+    
+   # r.compileCpp()
+   # r.save()
    
         
