@@ -165,7 +165,7 @@ if __name__=='__main__':
     testFile=r'/home/lipei/cpp/hwpy/hmpy/LibArray.cpp'
     import numpy as np
     students='students.txt'
-    s=np.loadtxt(students)
+    s=np.loadtxt(students,'int')
     h=Homework(path,testFile,s)
     h.unzip_dir()
     h.compileCpp()
