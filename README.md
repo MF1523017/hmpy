@@ -13,3 +13,4 @@
 
 ##result:
 * time_result.csv
+#程序如果卡住 请一直ctrl-c

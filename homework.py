@@ -20,8 +20,8 @@ def getTime():
 
 class Homework:
     def __init__(self,path,testFile,result,zipFiles=None,zipDirs=None):
-        self.path=path
-        self.testFile=testFile
+        self.path=os.path.abspath(path)
+        self.testFile=os.path.abspath(testFile)
         if not zipFiles:
             zipFiles=list()
         if not zipDirs:
@@ -128,8 +128,12 @@ class Homework:
                 ncpp.write(nline)
                 
     def compileCpp(self):
-        for path in self.zipDirs:
+        files=0
+	for path in self.zipDirs:
            # pdb.set_trace()
+	    files+=1
+            if files%10==0:
+		self.save()
             os.system('g++ -std=c++11 -o {0}/test11 {0}/*.h {0}/*.cpp '.format(path))
             os.system('g++ -o {0}/test1 {0}/*.h {0}/*.cpp '.format(path))
             key=list(os.path.split(path))[-1]
@@ -160,7 +164,8 @@ class Homework:
         else:
             return max(result)
     def save(self):
-        with open('{}result.csv'.format(getTime()),'w') as r:
+   	os.chdir(self.path)
+	with open('result.csv','w') as r:
             for key,value in self.result.items():
                 r.write(str(key))
                 r.write(',')
