@@ -22,6 +22,7 @@ class Homework:
     def __init__(self,path,testFile,result,zipFiles=None,zipDirs=None):
         self.path=os.path.abspath(path)
         self.testFile=os.path.abspath(testFile)
+        self.checkStdafx(self.testFile)
         if not zipFiles:
             zipFiles=list()
         if not zipDirs:
