@@ -33,8 +33,11 @@ class Homework:
         self.result=OrderedDict()
         self.initResult(result)
     def initResult(self,r):
-        for i in r:
-            self.result[str(i)]=0
+        if len(r)==1:
+            self.result[str(r)]=0
+        else:
+            for i in r:
+                self.result[str(i)]=0
     def __zipfiles(self):
         dirs=os.listdir(self.path)
         for d in dirs:
