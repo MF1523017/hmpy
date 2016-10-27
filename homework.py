@@ -22,6 +22,7 @@ class Homework:
     def __init__(self,path,testFile,result,zipFiles=None,zipDirs=None):
         self.path=os.path.abspath(path)
         self.testFile=os.path.abspath(testFile)
+       # pdb.set_trace()
         self.checkStdafx(self.testFile)
         if not zipFiles:
             zipFiles=list()
@@ -38,7 +39,7 @@ class Homework:
         dirs=os.listdir(self.path)
         for d in dirs:
             if d.endswith('zip'):
-                self.zipFiles.append(os.path.abspath(d))
+                self.zipFiles.append(os.path.join(self.path,d))  
     def nums(self,fstr):
         num=re.findall(r'[0-9]+',fstr)
         if num==[]:
@@ -61,6 +62,7 @@ class Homework:
         for zipF in self.zipFiles:
             numpath=self.extractNum(zipF[:-4])
             self.zipDirs.append(numpath)
+          #  pdb.set_trace()
             if not os.path.exists(numpath):
                 os.mkdir(numpath)
            # print numpath
@@ -80,6 +82,7 @@ class Homework:
                 eachFileName=eachFileName.replace(' ','')
                 eachDirName=os.path.dirname(eachFileName)
                 eachDirName=eachDirName.replace(' ','')
+               
                 if not os.path.exists(eachDirName):
                     try:
                         os.mkdir(eachDirName)
@@ -93,7 +96,7 @@ class Homework:
                         if self.checkMain(eachFileName):
                             os.remove(eachFileName)
                             continue
-                        #pdb.set_trace()
+                    #    pdb.set_trace()
                         self.checkStdafx(eachFileName)
                         shutil.copy(eachFileName,numpath)
                     except:
@@ -129,12 +132,8 @@ class Homework:
                 ncpp.write(nline)
                 
     def compileCpp(self):
-        files=0
 	for path in self.zipDirs:
            # pdb.set_trace()
-	    files+=1
-            if files%10==0:
-		self.save()
             os.system('g++ -std=c++11 -o {0}/test11 {0}/*.h {0}/*.cpp '.format(path))
             os.system('g++ -o {0}/test1 {0}/*.h {0}/*.cpp '.format(path))
             key=list(os.path.split(path))[-1]
@@ -181,7 +180,8 @@ class RarHomework(Homework):
         dirs=os.listdir(self.path)
         for d in dirs:
             if d.endswith('.rar'):
-                self.rarFile.append(os.path.abspath(d))   
+               # pdb.set_trace()
+                self.rarFile.append(os.path.join(self.path,d))  
     def filesOrDir(self,l):
         for f in l:
             if '.h' in f or '.cpp' in f:
@@ -224,7 +224,7 @@ class RarHomework(Homework):
 #            rarFile=os.path.split(rar)[-1]
 #            noSpaceRarFile=self.checkSpace(rarFile)
             newRar=os.path.join(numpath,os.path.split(numpath)[-1]+'.rar')
-            
+            #pdb.set_trace()
             shutil.copy(rar,newRar)
             os.chdir(numpath)
             s1=os.system('rar x {}'.format(newRar))
