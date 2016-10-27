@@ -156,7 +156,8 @@ class Homework:
         with open(f,'r') as rs:
             for r in rs:
                 try:
-                    result.append(int(r))
+                    score=[int(num) for num in re.findall(r'[0-9]+',r) if 0<int(num)<=100]
+                    result.append(max(score))
                 except:
                     result.append(60)
         if result==[]:
