@@ -1,7 +1,7 @@
-#homework.py
-##用于批量批改c++ 作业
-##usage:
->python homeworkDir testFilePath studentsNameFile
+# homework.py
+## 用于批量批改c++ 作业
+## usage:
+>python homework.py homeworkDir testFilePath studentsNameFile
 
 * homeworkDir:所有同学作业所在目录
 * testFilePath:测试文件所在路径
@@ -11,7 +11,7 @@
 		* 1111
 		*  ......		
 
-##result:
+## result:
 * time_result.csv
 
-#程序如果卡住 请一直ctrl-c
+# 程序如果卡住 请一直ctrl-c
