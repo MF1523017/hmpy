@@ -116,8 +116,10 @@ class Homework:
         tmp=list()
         with open(f,'r') as cpp:
             for line  in cpp:
-                if "stdafx.h" in line:
+                if "stdafx.h" in line.lower():
                    # pdb.set_trace()
+                    continue
+                elif "#pragma once" in line:
                     continue
                 elif 'main' in line:
                     if '{' in line:
